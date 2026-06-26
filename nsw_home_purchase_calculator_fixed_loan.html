@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="House Calculator">
+<title>NSW Home Purchase Calculator</title>
+<style>
+:root{--blue:#1463d8;--green:#12a05c;--purple:#7450d8;--pink:#e11d48;--text:#0f172a;--muted:#64748b;--card:#fff;--bg:#f6f8fb;--line:#e2e8f0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--text)}
+.wrap{max-width:1100px;margin:auto;padding:18px 14px 32px}
+.header{display:flex;gap:14px;align-items:center;margin-bottom:16px}
+.icon{width:58px;height:58px;border-radius:14px;background:linear-gradient(135deg,#0ea5e9,#4f46e5);display:grid;place-items:center;color:#fff;font-size:32px}
+h1{font-size:28px;margin:0 0 4px}
+p{margin:0;color:var(--muted);line-height:1.35}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px;box-shadow:0 2px 10px rgba(15,23,42,.06)}
+.summary{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;gap:12px;align-items:center;text-align:center}
+.metric .label{font-weight:700;color:var(--blue);font-size:15px}
+.metric .value{font-size:23px;font-weight:800;margin-top:8px}
+.green .label,.green .value{color:var(--green)}
+.purple .label,.purple .value{color:var(--purple)}
+.pinkText .label,.pinkText .value{color:var(--pink)}
+.op{font-size:28px;font-weight:800;color:#475569}
+.grid{display:grid;grid-template-columns:1fr 1.15fr;gap:14px}
+h2{font-size:19px;margin:0 0 14px;color:var(--blue)}
+h2.pink{color:var(--pink)}
+label{display:block;font-weight:700;margin:13px 0 6px}
+input{width:100%;font-size:16px;padding:13px;border:1px solid #cbd5e1;border-radius:10px;background:#fff}
+input[readonly]{background:#eef2f7;color:#0f172a}
+.hint{font-size:12px;color:var(--muted);margin-top:5px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.table{width:100%;border-collapse:collapse}
+.table td{padding:10px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.table td:last-child{text-align:right;font-weight:700}
+.total td{font-size:18px;font-weight:900;color:var(--blue);border:0;background:#eff6ff;padding:12px;border-top:1px solid #bfdbfe}
+.resultbox{background:#f3e8ff;border-radius:14px;padding:16px;text-align:center;margin-top:12px}
+.resultbox .big{font-size:28px;font-weight:900;color:var(--purple)}
+.incomebox{background:#ecfdf5;border:1px solid #bbf7d0;border-radius:12px;padding:12px;text-align:center;margin-top:14px}
+.incomebox .big{font-size:22px;font-weight:900;color:var(--green)}
+.legend{margin-top:16px}
+.legendrow{display:grid;grid-template-columns:18px 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.dot{width:14px;height:14px;border-radius:50%}
+.blue{background:var(--blue)}.greenbg{background:var(--green)}.purplebg{background:var(--purple)}
+.chartwrap{display:grid;place-items:center}
+.donut{width:260px;height:260px;border-radius:50%;background:conic-gradient(var(--blue) 0deg 0deg,var(--green) 0deg 0deg,var(--purple) 0deg 0deg);position:relative}
+.donut:after{content:"";position:absolute;inset:64px;background:white;border-radius:50%}
+.centre{position:absolute;inset:0;display:grid;place-items:center;text-align:center;z-index:1;font-weight:800}
+.small{font-size:13px;color:var(--muted);font-weight:600}
+.note{text-align:center;color:var(--muted);font-size:12px;margin-top:12px}
+button{width:100%;font-size:16px;border:1px solid #bfdbfe;background:#eff6ff;color:var(--blue);border-radius:10px;padding:12px;font-weight:800;margin-top:16px}
+.gauge{height:28px;border-radius:999px;background:linear-gradient(90deg,#16a34a 0%,#84cc16 30%,#f59e0b 50%,#e11d48 100%);position:relative;margin:22px 0 12px}
+.marker{position:absolute;top:-10px;width:4px;height:48px;background:#111827;border-radius:4px;left:0%}
+.marker:after{content:"";position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);width:16px;height:16px;border-radius:50%;background:#111827}
+.scale{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-top:4px}
+.incomegrid{display:grid;grid-template-columns:1fr 230px;gap:18px;align-items:center}
+.incomeStats{background:#fff1f2;border:1px solid #ffe4e6;border-radius:14px;padding:16px;text-align:center}
+.incomeStats .big{font-size:34px;font-weight:900;color:var(--pink)}
+.warning{font-size:12px;color:var(--pink);line-height:1.35;margin-top:10px}
+@media(max-width:760px){
+.wrap{padding:14px 10px 28px}
+.header{align-items:flex-start}.icon{width:52px;height:52px}h1{font-size:23px}
+.summary{grid-template-columns:1fr;gap:8px;text-align:left}.op{display:none}
+.metric{border-bottom:1px solid var(--line);padding-bottom:8px}.metric:last-child{border-bottom:0}
+.metric .value{font-size:22px}
+.grid{grid-template-columns:1fr}
+.row{grid-template-columns:1fr}
+.card{padding:15px}
+.donut{width:230px;height:230px}.donut:after{inset:58px}
+.table td{display:block;text-align:left!important;border-bottom:0;padding:3px 0}
+.table tr{display:block;border-bottom:1px solid var(--line);padding:8px 0}
+.total{border:0!important}.total td{display:block}
+.incomegrid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="icon">⌂</div>
+    <div>
+      <h1>NSW Home Purchase Calculator</h1>
+      <p>Calculate total purchase costs, fixed bank lending, and the amount needed from savings and family.</p>
+    </div>
+  </div>
+
+  <div class="card summary">
+    <div class="metric"><div class="label">Total Funds Required</div><div class="value" id="sTotal">$0</div></div>
+    <div class="op">−</div>
+    <div class="metric"><div class="label">Fixed Bank Loan</div><div class="value" id="sLoan">$1,592,000</div></div>
+    <div class="op">=</div>
+    <div class="metric purple"><div class="label">Needed From Savings & Family</div><div class="value" id="sDelta">$0</div></div>
+    <div class="op"></div>
+    <div class="metric green"><div class="label">Surplus / Shortfall</div><div class="value" id="sGap">$0</div></div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>1. Property & Funding Inputs</h2>
+        <label>Property Purchase Price</label><input id="price" inputmode="numeric" value="1990000">
+        <label>Your Savings Contribution</label><input id="savings" inputmode="numeric" value="494000">
+        <label>Family Loan Amount</label><input id="family" inputmode="numeric" value="0">
+        <label>Fixed Bank Loan</label><input id="fixedLoan" inputmode="numeric" value="1592000" readonly>
+        <div class="hint">Fixed bank loan is deducted from the total cost. Savings plus family loan need to cover the remaining delta.</div>
+      </div>
+
+      <div class="card">
+        <h2>2. Loan Settings</h2>
+        <div class="row">
+          <div><label>Interest Rate (%)</label><input id="rate" inputmode="decimal" value="6.09"></div>
+          <div><label>Loan Term (Years)</label><input id="term" inputmode="numeric" value="30"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>3. Fees</h2>
+        <label>Mortgage Registration Fee</label><input id="reg" inputmode="decimal" value="175.70">
+        <label>Mortgage Discharge Fee</label><input id="discharge" inputmode="decimal" value="175.70">
+        <label>Transfer Fee</label><input id="transfer" inputmode="decimal" value="175.70">
+        <label>Legal Fees</label><input id="legal" inputmode="numeric" value="3000">
+        <label>Lender Upfront Fees</label><input id="lender" inputmode="numeric" value="600">
+        <button onclick="resetDefaults()">Reset All</button>
+      </div>
+
+      <div class="card">
+        <h2 style="color:var(--green)">4. Monthly Income</h2>
+        <label>Dan's Monthly Income</label><input id="danIncome" inputmode="numeric" value="6000">
+        <label>Taylor's Monthly Income</label><input id="taylorIncome" inputmode="numeric" value="5000">
+        <div class="incomebox">
+          <div>Total Monthly Income</div>
+          <div class="big" id="totalIncome">$0</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h2>Funding Breakdown</h2>
+        <div class="chartwrap">
+          <div class="donut" id="donut"><div class="centre"><div><div class="small">Total Cost</div><div id="centreTotal">$0</div></div></div></div>
+        </div>
+        <div class="legend">
+          <div class="legendrow"><span class="dot blue"></span><span>Fixed Bank Loan</span><strong id="lLoan">$0</strong></div>
+          <div class="legendrow"><span class="dot greenbg"></span><span>Your Savings</span><strong id="lSavings">$0</strong></div>
+          <div class="legendrow"><span class="dot purplebg"></span><span>Family Loan</span><strong id="lFamily">$0</strong></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 style="color:var(--purple)">Savings & Family Loan Required</h2>
+        <table class="table">
+          <tr><td>Total Funds Required</td><td id="dTotal">$0</td></tr>
+          <tr><td>Less Fixed Bank Loan</td><td id="dLoan">$1,592,000</td></tr>
+          <tr class="total"><td>Required From Savings & Family</td><td id="dDelta">$0</td></tr>
+          <tr><td>Actual Savings + Family Loan</td><td id="dActual">$0</td></tr>
+          <tr><td>Surplus / Shortfall</td><td id="dGap">$0</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>Loan Repayments</h2>
+        <table class="table">
+          <tr><td>Fixed Loan Amount</td><td id="rLoan">$0</td></tr>
+          <tr><td>Interest Rate</td><td id="rRate">6.09%</td></tr>
+          <tr><td>Loan Term</td><td id="rTerm">30 years</td></tr>
+        </table>
+        <div class="resultbox">
+          <div>Estimated Monthly Repayment</div>
+          <div class="big" id="repayment">$0</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="pink">Repayment as % of Combined Monthly Income</h2>
+        <div class="incomegrid">
+          <div>
+            <div class="gauge"><div class="marker" id="incomeMarker"></div></div>
+            <div class="scale"><span>0%</span><span>30%</span><span>50%</span><span>100%</span></div>
+            <div class="resultbox" style="background:#fff1f2">
+              <div class="big" id="incomePercent" style="color:var(--pink)">0%</div>
+              <div>of combined monthly income</div>
+            </div>
+          </div>
+          <div class="incomeStats">
+            <div>Monthly Repayment</div>
+            <strong id="statRepayment">$0</strong>
+            <hr>
+            <div>Combined Monthly Income</div>
+            <strong id="statIncome">$0</strong>
+            <hr>
+            <div>Percentage</div>
+            <div class="big" id="statPercent">0%</div>
+            <div class="warning" id="incomeWarning"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Cost Breakdown</h2>
+    <table class="table">
+      <tr><td>Property Purchase Price</td><td id="cPrice">$0</td></tr>
+      <tr><td>Stamp Duty (NSW)</td><td id="cStamp">$0</td></tr>
+      <tr><td>Mortgage Registration Fee</td><td id="cReg">$0</td></tr>
+      <tr><td>Mortgage Discharge Fee</td><td id="cDischarge">$0</td></tr>
+      <tr><td>Transfer Fee</td><td id="cTransfer">$0</td></tr>
+      <tr><td>Legal Fees</td><td id="cLegal">$0</td></tr>
+      <tr><td>Lender Upfront Fees</td><td id="cLender">$0</td></tr>
+      <tr class="total"><td>Total Funds Required</td><td id="cTotal">$0</td></tr>
+    </table>
+  </div>
+  <div class="note">Estimates only. Confirm stamp duty, fees and loan details with your conveyancer or mortgage broker.</div>
+</div>
+
+<script>
+function $(id){return document.getElementById(id)}
+function num(id){return parseFloat(($(id).value||"").replace(/[^0-9.]/g,""))||0}
+function money(n){return new Intl.NumberFormat("en-AU",{style:"currency",currency:"AUD",maximumFractionDigits:2}).format(n)}
+function duty(p){if(p<=17000)return p*.0125;if(p<=36000)return 212+(p-17000)*.015;if(p<=97000)return 497+(p-36000)*.0175;if(p<=364000)return 1564+(p-97000)*.035;if(p<=1212000)return 10909+(p-364000)*.045;return 49069+(p-1212000)*.055}
+function set(id,v){$(id).textContent=v}
+function calc(){
+ const price=num("price"),savings=num("savings"),family=num("family"),fixedLoan=num("fixedLoan"),reg=num("reg"),dis=num("discharge"),trans=num("transfer"),legal=num("legal"),lender=num("lender");
+ const dan=num("danIncome"),taylor=num("taylorIncome"),combined=dan+taylor;
+ const stamp=duty(price),total=price+stamp+reg+dis+trans+legal+lender;
+ const requiredFromSavingsFamily=Math.max(0,total-fixedLoan);
+ const actualSavingsFamily=savings+family;
+ const gap=actualSavingsFamily-requiredFromSavingsFamily;
+ const loan=fixedLoan;
+ const mRate=num("rate")/100/12,months=Math.max(1,num("term")*12);
+ const repay=mRate===0?loan/months:loan*mRate*Math.pow(1+mRate,months)/(Math.pow(1+mRate,months)-1);
+ const pct=combined>0?repay/combined*100:0;
+ set("sTotal",money(total));set("sLoan",money(loan));set("sDelta",money(requiredFromSavingsFamily));set("sGap",(gap>=0?"+":"-")+money(Math.abs(gap)));
+ set("centreTotal",money(total));
+ set("lLoan",money(loan));set("lSavings",money(savings));set("lFamily",money(family));
+ set("dTotal",money(total));set("dLoan",money(loan));set("dDelta",money(requiredFromSavingsFamily));set("dActual",money(actualSavingsFamily));set("dGap",(gap>=0?"Surplus ":"Shortfall ")+money(Math.abs(gap)));
+ set("rLoan",money(loan));set("rRate",num("rate").toFixed(2)+"% p.a.");set("rTerm",num("term")+" years");set("repayment",money(repay));
+ set("totalIncome",money(combined));set("statRepayment",money(repay));set("statIncome",money(combined));set("incomePercent",pct.toFixed(1)+"%");set("statPercent",pct.toFixed(1)+"%");
+ set("incomeWarning",pct>=50?"Above 50% may cause financial stress.":pct>=30?"Above 30% is often considered high.":"Within a lower repayment-to-income range.");
+ $("incomeMarker").style.left=Math.min(100,Math.max(0,pct))+"%";
+ set("cPrice",money(price));set("cStamp",money(stamp));set("cReg",money(reg));set("cDischarge",money(dis));set("cTransfer",money(trans));set("cLegal",money(legal));set("cLender",money(lender));set("cTotal",money(total));
+ const loanPct=total?loan/total*360:0, savingsPct=total?savings/total*360:0, familyPct=total?family/total*360:0;
+ $("donut").style.background=`conic-gradient(var(--blue) 0deg ${loanPct}deg,var(--green) ${loanPct}deg ${loanPct+savingsPct}deg,var(--purple) ${loanPct+savingsPct}deg ${loanPct+savingsPct+familyPct}deg,#e5e7eb ${loanPct+savingsPct+familyPct}deg 360deg)`;
+}
+function resetDefaults(){["price:1990000","savings:494000","family:0","fixedLoan:1592000","rate:6.09","term:30","reg:175.70","discharge:175.70","transfer:175.70","legal:3000","lender:600","danIncome:6000","taylorIncome:5000"].forEach(x=>{let [id,v]=x.split(":");$(id).value=v});calc()}
+document.querySelectorAll("input").forEach(el=>{el.addEventListener("input",calc);el.addEventListener("change",calc);el.addEventListener("keyup",calc)});
+calc();
+</script>
+</body>
+</html>
